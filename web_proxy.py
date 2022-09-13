@@ -42,7 +42,7 @@ while True:
     filetouse = "/" + filename
     try:
 
-        f = open(filetouse[1:], "r")#verifica se o arquivo existe na cache, passando por paramentro o nome, com r de read
+        f = open(filetouse[1:], "r")#verifica se o arquivo existe na pasta, passando por paramentro o nome, com r de read
         outputdata = f.readlines()
         fileExist = "true"
         print ('File Exists!')
