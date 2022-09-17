@@ -1,4 +1,3 @@
-# Simple proxy server for Class assignment
 from socket import *
 import sys
 
@@ -20,6 +19,8 @@ tcpSerSock.listen(5)
 #fill end
 
 while True:
+
+    URL = ""
     # Start receiving data from the client
     print ('Ready to serve...')
     tcpCliSock, addr = tcpSerSock.accept()
@@ -40,9 +41,10 @@ while True:
     filename=filename.replace("b",'')
     fileExist = "false"
     filetouse = "/" + filename
+    print("Filename: ", filename)
     try:
 
-        f = open(filetouse[1:], "r")#verifica se o arquivo existe na pasta, passando por paramentro o nome, com r de read
+        f = open(filetouse[1:], "r")#verifica se o arquivo existe na cache, passando por paramentro o nome, com r de read
         outputdata = f.readlines()
         fileExist = "true"
         print ('File Exists!')
@@ -53,52 +55,15 @@ while True:
         for i in range(0, len(outputdata)):#lê os arquivos linha por linha e envia
             tcpCliSock.send(outputdata[i].encode())
         print ('Read from cache')
+        
     except IOError:#caso não esteja na cache
+
         print ('File Exist: ', fileExist)
-        if fileExist == "false":
-            #cria o sockt com o protocolo TCP IP
-            print ('Creating socket on proxyserver')
-            c = socket(AF_INET, SOCK_STREAM)
-            #criado com sucesso
-            
-            hostn = filename.replace("www.", "", 1)
-            print ('Host Name: ', hostn)
-            try:
-                #conecta no socket com na porta 80
-                #Tenta preencher o inicio do socket 
-                c.connect((hostn, 80))
-                #Terminou de preencher o socket
-                print ('Socket connected to port 80 of the host')
-                # le as linhas do arquivo requerido pelo cliente
-                fileobj = c.makefile('r', 0)
-                fileobj.write("GET " + "http://" + filename + " HTTP/1.0\n\n")
-                # le a linha de resposta do buffer
-                buff = fileobj.readlines()
-                final = []
-                for line in buff:
-                    l = line.replace('href="/','href="http://' + filename + '/')#le linha por linha do buffer e da um append da linha em uma lista final
-                    l = l.replace('src="/','href="http://' + filename + '/')
-                    final.append(l)
-                #fill end
-                
-                # cria um novo arquivo na cache
-                # e tambem envia uma resposta para o cliente
-                # e o arquivo correspondente na cache
-                tmpFile = open("./" + filename, "wb")
-                for i in final:
-                    tmpFile.write(i)
-                    tcpCliSock.send(i)
-
-            except Exception as inst:
-                print ('Illegal request')
-                print (inst)
-
-        else:
-            # HTTP response message for file not found
-            #fill start
-            tcpCliSock.send("HTTP/1.0 404 Not Found\r\n".encode())
-            tcpCliSock.send("Content-Type:text/html\r\n".encode())
-            #fill end
+        # HTTP response message for file not found
+        #fill start
+        tcpCliSock.send("HTTP/1.0 404 Not Found\r\n".encode())
+        tcpCliSock.send("Content-Type:text/html\r\n".encode())
+        #fill end
             
     # Close the socket and the server sockets
     tcpCliSock.close()
